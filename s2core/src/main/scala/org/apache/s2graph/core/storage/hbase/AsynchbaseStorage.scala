@@ -51,6 +51,7 @@ object AsynchbaseStorage {
   val edgeCf = Serializable.edgeCf
   val emptyKVs = new util.ArrayList[KeyValue]()
 
+  AsynchbaseClassLoader.init()
 
   def makeClient(config: Config, overrideKv: (String, String)*) = {
     val asyncConfig: org.hbase.async.Config =
