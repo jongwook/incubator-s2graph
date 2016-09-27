@@ -51,6 +51,7 @@ object AsynchbaseStorage {
   val edgeCf = Serializable.edgeCf
   val emptyKVs = new util.ArrayList[KeyValue]()
 
+  AsynchbasePatcher.init()
 
   def makeClient(config: Config, overrideKv: (String, String)*) = {
     val asyncConfig: org.hbase.async.Config =
@@ -198,7 +199,7 @@ class AsynchbaseStorage(override val config: Config)(implicit ec: ExecutionConte
 
     label.schemaVersion match {
       case HBaseType.VERSION4 if queryParam.tgtVertexInnerIdOpt.isEmpty =>
-        val scanner = client.newScanner(label.hbaseTableName.getBytes)
+        val scanner = AsynchbasePatcher.newScanner(client, label.hbaseTableName)
         scanner.setFamily(edgeCf)
 
         /*
@@ -247,13 +248,13 @@ class AsynchbaseStorage(override val config: Config)(implicit ec: ExecutionConte
         scanner
       case _ =>
         val get =
-          if (queryParam.tgtVertexInnerIdOpt.isDefined) new GetRequest(label.hbaseTableName.getBytes, rowKey, edgeCf, qualifier)
-          else new GetRequest(label.hbaseTableName.getBytes, rowKey, edgeCf)
+          if (queryParam.tgtVertexInnerIdOpt.isDefined) AsynchbasePatcher.newGetRequest(label.hbaseTableName.getBytes, rowKey, edgeCf, qualifier)
+          else AsynchbasePatcher.newGetRequest(label.hbaseTableName.getBytes, rowKey, edgeCf)
 
         get.maxVersions(1)
         get.setFailfast(true)
-        get.setMaxResultsPerColumnFamily(queryParam.limit)
-        get.setRowOffsetPerColumnFamily(queryParam.offset)
+        get.setStoreLimit(queryParam.limit)
+        get.setStoreOffset(queryParam.offset)
         get.setMinTimestamp(minTs)
         get.setMaxTimestamp(maxTs)
         get.setTimeout(queryParam.rpcTimeoutInMillis)
