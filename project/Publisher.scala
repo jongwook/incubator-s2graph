@@ -13,7 +13,7 @@ object Publisher {
       if (isSnapshot.value) {
         Some("apache" at "https://repository.apache.org/content/repositories/snapshots")
       } else {
-        Some("apache" at "https://repository.apache.org/content/repositories/releases")
+        Some("apache" at "https://repository.apache.org/service/local/staging/deploy/maven2")
       }
     },
     credentials ++= {
